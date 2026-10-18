@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Agenda de Miriam</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap">
+<style>
+/* Agenda digital cute: shiba que saluda arriba, tira de la semana, pegatinas por categoría, tareas como fichas redondas. */
+:root{
+  --bg:#fff4ef; --bg2:#ffe9e1; --card:#ffffff; --ink:#4a3631; --soft:#8f7770; --line:#f5dcd3;
+  --shiba:#ef9a4f; --shiba-dk:#d97b33; --cream:#fff6ea; --blush:#ffadb8;
+  --mint:#c6ecd9; --lilac:#ddd3fb; --peach:#ffd9c2; --sky:#cfe6ff; --butter:#fff0b3; --rose:#ffd3df; --sage:#e2efc6;
+  --late:#e2596b; --display:"Fredoka","Arial Rounded MT Bold",system-ui,sans-serif; --body:"Nunito",system-ui,sans-serif;
+  --r:22px; color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#2a2130; --bg2:#33283b; --card:#3a2e43; --ink:#fbeff2; --soft:#c6b2bd; --line:#4a3c54;
+  --cream:#fff3e3; --late:#ff8a98; color-scheme:dark}}
+*{box-sizing:border-box}
+html{background:var(--bg)}
+body{margin:0;color:var(--ink);font:16px/1.5 var(--body);
+  background:radial-gradient(circle at 12% 0,var(--bg2) 0 220px,transparent 221px),radial-gradient(circle at 100% 30%,var(--bg2) 0 160px,transparent 161px),var(--bg);
+  -webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+.app{max-width:560px;margin:0 auto;padding:20px 16px 80px;display:flex;flex-direction:column;gap:18px}
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;touch-action:manipulation}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid var(--shiba);outline-offset:2px}
+
+/* Saludo */
+.hero{display:grid;grid-template-columns:118px 1fr;align-items:end;gap:6px;margin-top:6px}
+.shiba{width:118px;height:auto;display:block;filter:drop-shadow(0 6px 0 rgba(217,123,51,.15))}
+.shiba.bounce{animation:bounce .6s ease}
+@keyframes bounce{30%{transform:translateY(-10px) rotate(-4deg)}60%{transform:translateY(0) rotate(2deg)}}
+.bubble{background:var(--card);border-radius:24px 24px 24px 6px;padding:14px 16px;box-shadow:0 4px 0 var(--line);margin-bottom:30px;position:relative}
+.bubble h1{font:700 1.45rem/1.15 var(--display);margin:0}
+.bubble p{margin:4px 0 0;color:var(--soft);font-weight:600}
+.bubble b{color:var(--shiba-dk)}
+.date{font:600 .95rem var(--display);color:var(--soft);margin:0 0 2px}
+
+/* Progreso de hoy */
+.progress{display:flex;align-items:center;gap:10px;font-weight:700;font-size:.9rem;color:var(--soft)}
+.bar{flex:1;height:14px;background:var(--card);border-radius:99px;box-shadow:inset 0 2px 0 var(--line);position:relative;overflow:visible}
+.bar i{position:absolute;inset:0 auto 0 0;background:repeating-linear-gradient(-45deg,var(--shiba) 0 8px,#f5ad6b 8px 16px);border-radius:99px;transition:width .4s ease;min-width:14px}
+.bar svg{position:absolute;top:50%;width:22px;height:22px;transform:translate(-50%,-50%);transition:left .4s ease}
+
+/* Semana */
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.day{background:var(--card);border-radius:18px;padding:8px 0 10px;display:flex;flex-direction:column;align-items:center;gap:2px;box-shadow:0 3px 0 var(--line);min-height:76px}
+.day .wd{font:600 .72rem var(--display);color:var(--soft);text-transform:capitalize}
+.day .n{font:700 1.3rem/1.1 var(--display)}
+.day .dots{display:flex;gap:3px;height:6px}
+.day .dots span{width:6px;height:6px;border-radius:50%;background:var(--shiba)}
+.day.today .n{color:var(--shiba-dk)}
+.day[aria-pressed="true"]{background:var(--shiba);color:#fff;box-shadow:0 3px 0 var(--shiba-dk)}
+.day[aria-pressed="true"] .wd,.day[aria-pressed="true"] .n{color:#fff}
+.day[aria-pressed="true"] .dots span{background:#fff}
+
+/* Nueva tarea */
+.new{background:var(--card);border-radius:var(--r);padding:16px;box-shadow:0 4px 0 var(--line);display:flex;flex-direction:column;gap:12px}
+.new textarea{font:600 1.1rem/1.4 var(--body);color:var(--ink);background:var(--bg);border:2px solid transparent;border-radius:16px;padding:12px 14px;resize:none;width:100%}
+.new textarea:focus{border-color:var(--shiba);outline:none}
+.new textarea::placeholder{color:var(--soft)}
+.lbl{font:600 .8rem var(--display);color:var(--soft);margin:0 0 6px}
+.stickers{display:flex;flex-wrap:wrap;gap:6px}
+.sticker{padding:6px 12px;border-radius:99px;font-weight:700;font-size:.85rem;background:var(--c);color:#4a3631;border:2px solid transparent;min-height:36px}
+.sticker[aria-checked="true"]{border-color:#4a3631;transform:rotate(-2deg)}
+.when{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.when button,.when input{padding:6px 12px;border-radius:99px;font-weight:700;font-size:.85rem;background:var(--bg);color:var(--ink);border:2px solid transparent;min-height:36px;font-family:var(--body)}
+.when [aria-pressed="true"]{border-color:var(--shiba);background:var(--peach);color:#4a3631}
+.add{display:flex;align-items:center;justify-content:center;gap:8px;background:var(--shiba);color:#fff;font:700 1.05rem var(--display);border-radius:16px;padding:12px;box-shadow:0 4px 0 var(--shiba-dk)}
+.add:active{transform:translateY(3px);box-shadow:0 1px 0 var(--shiba-dk)}
+.add:disabled{opacity:.6}
+.status{margin:0;font-weight:700;font-size:.9rem;color:var(--soft);min-height:1.4em;text-align:center}
+
+/* Lista */
+section{display:flex;flex-direction:column;gap:8px}
+h2{font:700 1.15rem var(--display);margin:8px 4px 0;display:flex;align-items:center;gap:8px}
+h2 small{font:700 .8rem var(--body);background:var(--card);color:var(--soft);border-radius:99px;padding:1px 9px}
+section.late h2{color:var(--late)}
+ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+li{background:var(--card);border-radius:20px;padding:12px 12px 12px 10px;display:grid;grid-template-columns:auto 1fr auto;gap:2px 10px;align-items:start;box-shadow:0 3px 0 var(--line);position:relative}
+li.done{opacity:.6}
+li.done .t{text-decoration:line-through}
+.paw{width:34px;height:34px;border-radius:50%;background:var(--bg);display:grid;place-content:center;border:2px dashed var(--line)}
+.paw svg{width:20px;height:20px;opacity:0;transform:scale(.4);transition:transform .25s cubic-bezier(.3,1.6,.5,1),opacity .2s}
+.paw[aria-checked="true"]{background:var(--shiba);border:2px solid var(--shiba)}
+.paw[aria-checked="true"] svg{opacity:1;transform:scale(1)}
+.t{font-weight:700;line-height:1.35;overflow-wrap:anywhere;min-width:0;padding-top:5px}
+.info{grid-column:2;display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:.8rem;font-weight:700;color:var(--soft)}
+.tag{background:var(--c);color:#4a3631;padding:1px 9px;border-radius:99px}
+.alert{background:var(--rose);color:#a2364a;padding:1px 9px;border-radius:99px}
+.alert.late{background:#e2596b;color:#fff}
+.info input[type=date]{font:inherit;color:var(--soft);background:transparent;border:none;padding:0;max-width:130px}
+.del{grid-column:3;grid-row:1;color:var(--soft);font-size:.8rem;font-weight:700;padding:6px 4px}
+.del.confirm{color:var(--late)}
+.empty{background:var(--card);border-radius:var(--r);padding:20px;text-align:center;font-weight:700;color:var(--soft);box-shadow:0 4px 0 var(--line);display:flex;flex-direction:column;align-items:center;gap:6px}
+.empty svg{width:110px}
+.more{align-self:center;font-weight:700;color:var(--shiba-dk);padding:8px}
+
+.t{text-align:left;padding:5px 0 0;border-radius:6px}
+.t:hover{color:var(--shiba-dk)}
+.shiba .wave{transform-origin:100px 104px;animation:wave 1.6s ease-in-out 2}
+@keyframes wave{25%{transform:rotate(-14deg)}50%{transform:rotate(8deg)}75%{transform:rotate(-10deg)}}
+.footer{display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--soft);font-weight:700;font-size:.9rem;margin-top:10px}
+.footer svg{width:96px}
+/* Panel de edición */
+dialog.ed{border:none;padding:0;border-radius:28px 28px 0 0;width:min(560px,100%);max-height:92vh;margin:auto auto 0;background:var(--card);color:var(--ink);box-shadow:0 -10px 40px rgba(74,54,49,.25)}
+@media (min-width:600px){dialog.ed{border-radius:28px;margin:auto}}
+dialog.ed::backdrop{background:rgba(74,54,49,.35);backdrop-filter:blur(3px)}
+dialog.ed[open]{animation:up .25s cubic-bezier(.3,1.3,.5,1)}
+@keyframes up{from{transform:translateY(40px);opacity:0}}
+.ed-form{padding:18px 18px calc(18px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:12px}
+.ed-head{display:flex;justify-content:space-between;align-items:center}
+.ed-head::before{content:"";position:absolute;left:50%;top:8px;width:42px;height:5px;border-radius:9px;background:var(--line);transform:translateX(-50%)}
+.ed-title{font:700 1.25rem var(--display);margin:6px 0 0}
+.ed-close{width:36px;height:36px;border-radius:50%;background:var(--bg);font-weight:800;color:var(--soft)}
+.ed-field{display:flex;flex-direction:column;gap:4px}
+.ed-lbl{font:600 .8rem var(--display);color:var(--soft)}
+.ed-input{font:600 1rem var(--body);color:var(--ink);background:var(--bg);border:2px solid transparent;border-radius:14px;padding:10px 12px;width:100%;resize:vertical}
+.ed-input:focus{border-color:var(--shiba);outline:none}
+.ed-datewrap{display:flex;flex-direction:column;gap:6px}
+.ed-quick{display:flex;flex-wrap:wrap;gap:6px}
+.ed-chip{padding:5px 12px;border-radius:99px;background:var(--peach);color:#4a3631;font-weight:700;font-size:.82rem;min-height:32px}
+.ed-link{color:var(--shiba-dk);font-weight:700}
+.ed-note{margin:0;font-size:.85rem;color:var(--late);font-weight:700}
+.ed-actions{display:grid;grid-template-columns:auto 1fr 1fr;gap:8px;margin-top:4px}
+.ed-del{color:var(--late);font-weight:700;padding:0 10px;font-size:.85rem}
+.ed-del.confirm{background:var(--rose);border-radius:14px;color:#a2364a}
+.ed-done{background:var(--mint);color:#2f5a45;font-weight:800;border-radius:14px;padding:12px}
+.ed-save{background:var(--shiba);color:#fff;font:700 1rem var(--display);border-radius:14px;padding:12px;box-shadow:0 4px 0 var(--shiba-dk)}
+
+.sticker.edit{background:transparent;border:2px dashed var(--line);color:var(--soft)}
+.ed-help{margin:0;color:var(--soft);font-size:.88rem;font-weight:600}
+.cm-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.cm-row{display:grid;grid-template-columns:14px minmax(0,1fr) auto auto;gap:8px;align-items:center;background:var(--bg);border-radius:16px;padding:6px 8px}
+.cm-row .ed-input{background:var(--card);padding:8px 10px}
+.cm-dot{width:14px;height:14px;border-radius:50%}
+.cm-count{font-size:.75rem;font-weight:700;color:var(--soft);white-space:nowrap}
+.cm-save{background:var(--shiba);color:#fff;font-weight:800;border-radius:12px;padding:6px 10px;font-size:.8rem}
+.cm-del{color:var(--late);font-weight:800;font-size:.8rem;padding:6px}
+.cm-confirm{grid-column:1/-1;display:flex;flex-direction:column;gap:6px;background:var(--rose);border-radius:12px;padding:10px;color:#4a3631}
+.cm-btns{display:flex;gap:8px;justify-content:flex-end}
+.cm-ok{background:var(--late);color:#fff;font-weight:800;border-radius:12px;padding:8px 12px}
+.cm-no{font-weight:700;padding:8px 10px;color:#4a3631}
+.cm-add{display:grid;grid-template-columns:1fr auto;gap:8px}
+
+.catbar{display:flex;gap:6px;overflow-x:auto;padding:2px 2px 6px;scrollbar-width:none}
+.catchip{flex:none;display:flex;gap:6px;align-items:center;padding:6px 12px;border-radius:99px;font-weight:800;font-size:.85rem;background:var(--card);box-shadow:0 3px 0 var(--line);min-height:36px;border:2px solid transparent}
+.catchip span{font-size:.72rem;background:var(--c,var(--bg));color:#4a3631;border-radius:99px;padding:0 7px}
+.catchip[aria-pressed="true"]{border-color:var(--shiba);background:var(--c,var(--peach));color:#4a3631}
+.catchip[aria-pressed="true"] span{background:#fff}
+.hint{margin:-2px 4px 2px;font-size:.85rem;font-weight:700;color:var(--soft)}
+li.movable{grid-template-columns:auto auto 1fr auto}
+li.movable .info{grid-column:3}
+li.movable .del{grid-column:4}
+.order{grid-row:1/3;display:flex;flex-direction:column;align-items:center;gap:0;margin:-4px 0}
+.arrow{width:30px;height:24px;border-radius:8px;font-weight:900;color:var(--soft);font-size:.95rem}
+.arrow:disabled{opacity:.25}
+.arrow:not(:disabled):hover{background:var(--bg);color:var(--shiba-dk)}
+.grip{cursor:grab;color:var(--shiba);font-size:1.2rem;line-height:1;padding:2px 6px;touch-action:none;user-select:none}
+li.ghost{opacity:.35;background:var(--peach)}
+li.sortable-chosen{box-shadow:0 10px 24px rgba(217,123,51,.3)}
+
+section.cat h2::before{content:"";width:14px;height:14px;border-radius:50%;background:var(--c);box-shadow:0 2px 0 var(--line)}
+.sortlink{margin-left:auto;font:700 .78rem var(--body);color:var(--shiba-dk);padding:4px 8px;border-radius:99px}
+.sortlink:hover{background:var(--card)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
+</head>
+<body>
+<main class="app">
+  <div class="hero">
+    <div id="shiba"></div>
+    <div class="bubble">
+      <p class="date" id="date"></p>
+      <h1 id="hello"></h1>
+      <p id="summary">Cargando tu agenda…</p>
+    </div>
+  </div>
+
+  <div class="progress" id="progress" hidden><span id="progTxt"></span><div class="bar"><i id="barFill"></i><svg id="barPaw" viewBox="0 0 24 24" aria-hidden="true"></svg></div></div>
+
+  <nav class="week" id="week" aria-label="Días de la semana"></nav>
+  <nav class="catbar" id="catbar" aria-label="Ver por categoría"></nav>
+
+  <form class="new" id="f">
+    <textarea id="txt" name="tarea" rows="2" placeholder="¿Qué tienes que hacer?" aria-label="Nueva tarea" autocomplete="off"></textarea>
+    <div><p class="lbl" id="catLbl">Categoría</p><div class="stickers" id="cats" role="radiogroup" aria-labelledby="catLbl"></div></div>
+    <div><p class="lbl">¿Para cuándo?</p>
+      <div class="when" id="when">
+        <button type="button" data-d="0">Hoy</button>
+        <button type="button" data-d="1">Mañana</button>
+        <button type="button" data-d="fri">Viernes</button>
+        <input type="date" id="fecha" name="fecha" aria-label="Elegir otro día">
+      </div>
+    </div>
+    <button class="add" id="add" type="submit"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" class="pawicon"></svg>Apuntar</button>
+    <p class="status" id="status" role="status" aria-live="polite"></p>
+  </form>
+
+  <div id="list"></div>
+</main>
+
+<script>window.CFG = Object.assign({"u": "miriam", "nombre": "Miriam", "cats": ["Personal", "Tecnología", "SAS", "Química", "Imprimir", "Taller IB - 7 Octubre", "Otros Cole"], "tech": false, "exec": "https://script.google.com/macros/s/AKfycbyYbn-NGAhwfC8didKOoar3qXEeZD6vQP1Dy4AvvJn4JZkspXiyx9HDLIJEubLVcL45/exec"}, { k: new URLSearchParams(location.hash.slice(1)).get("k") || "" });</script>
+<script>
+// Shared logic for both notebooks: talking to the server, dates and groups.
+const CFG = window.CFG;
+const $ = s => document.querySelector(s);
+const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+
+// Talks to the server through a direct POST to the web app. If that is not possible,
+// it falls back to google.script.run.
+const gsr = (fn, args) => new Promise((ok, ko) => typeof google === "undefined" ? ko(new Error("No hay conexión con el servidor. Revisa internet y recarga.")) :
+  google.script.run.withSuccessHandler(ok).withFailureHandler(ko)[fn](CFG.u, CFG.k, ...args));
+async function api(fn, ...args) {
+  if (CFG.exec) {
+    let r;
+    try { r = await fetch(CFG.exec, { method: "POST", body: JSON.stringify({ fn, u: CFG.u, k: CFG.k, args }) }).then(x => x.json()); }
+    catch (e) { return gsr(fn, args); }
+    if (!r.ok) throw new Error(r.error);
+    return r.data;
+  }
+  return gsr(fn, args);
+}
+// Days overdue (0 if on time or done).
+const retraso = it => (!it.hecho && it.fecha && it.fecha < today()) ? -daysTo(it.fecha) : 0;
+
+const today = () => new Date().toLocaleDateString("sv");
+const addDays = (d, n) => { const x = new Date(d + "T12:00"); x.setDate(x.getDate() + n); return x.toLocaleDateString("sv"); };
+const daysTo = d => Math.round((new Date(d + "T12:00") - new Date(today() + "T12:00")) / 864e5);
+const D = d => new Date(d + "T12:00");
+const F = {
+  long: new Intl.DateTimeFormat("es-ES", { weekday: "long", day: "numeric", month: "long" }),
+  short: new Intl.DateTimeFormat("es-ES", { weekday: "short", day: "numeric", month: "short" }),
+  wd: new Intl.DateTimeFormat("es-ES", { weekday: "short" }),
+  day: new Intl.DateTimeFormat("es-ES", { day: "numeric" })
+};
+const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+const plural = (n, uno, varios) => n + " " + (n === 1 ? uno : varios);
+const nextWeekday = wd => { let d = today(); do { d = addDays(d, 1); } while (D(d).getDay() !== wd); return d; };
+
+function bucket(it) {
+  if (it.hecho) return "done";
+  if (!it.fecha) return "nodate";
+  const t = today();
+  if (it.fecha < t) return "late"; if (it.fecha === t) return "today";
+  if (it.fecha <= addDays(t, 7)) return "week"; return "later";
+}
+const byDate = (a, b) => (a.fecha || "9").localeCompare(b.fecha || "9") || String(b.creado).localeCompare(String(a.creado));
+
+const Store = {
+  items: [], loaded: false, onchange: () => {}, onerror: () => {},
+  async load() {
+    try { this.items = await api("listar"); this.loaded = true; this.onchange(); }
+    catch (e) { this.onerror(/Enlace no válido/.test(errMsg(e)) ? "Este enlace no es válido. Abre tu enlace personal completo, tal como te llegó." : "No se pudieron cargar las tareas. Recarga la página para intentarlo de nuevo."); }
+  },
+  async add(texto, fecha, cat) {
+    const o = await api("anadir", texto, fecha, cat);
+    this.items.push(o); this.onchange(); return o;
+  },
+  async change(it, campos) {
+    Object.assign(it, campos); this.onchange();
+    try { await api("actualizar", it.id, campos); }
+    catch (e) { this.onerror("No se guardó el cambio. Recarga la página."); this.load(); }
+  },
+  async remove(it) {
+    this.items = this.items.filter(x => x !== it); this.onchange();
+    try { await api("borrar", it.id); } catch (e) { this.load(); }
+  },
+  pending() { return this.items.filter(i => !i.hecho); }
+};
+
+// Delete in two taps, since the viewer has no confirm dialogs.
+function deleteButton(cls, it, label, confirmLabel) {
+  const b = el("button", cls, label); b.type = "button";
+  b.onclick = () => {
+    if (!b.classList.contains("confirm")) {
+      b.classList.add("confirm"); b.textContent = confirmLabel;
+      setTimeout(() => { b.classList.remove("confirm"); b.textContent = label; }, 3000); return;
+    }
+    Store.remove(it);
+  };
+  return b;
+}
+
+// Edit panel (a <dialog>). Each page styles the .ed-* classes in its own way.
+// opts: { tipo: true to allow switching idea/task, quick: [[label, date], ...] }
+function openEditor(it, opts = {}) {
+  let dlg = document.getElementById("editor");
+  if (!dlg) { dlg = el("dialog", "ed"); dlg.id = "editor"; document.body.append(dlg); dlg.addEventListener("click", e => { if (e.target === dlg) dlg.close(); }); }
+  dlg.innerHTML = "";
+  const form = el("form", "ed-form"); form.method = "dialog";
+  const head = el("div", "ed-head");
+  const h = el("h2", "ed-title", "Editar " + (it.tipo === "idea" ? "idea" : "tarea"));
+  const x = el("button", "ed-close", "✕"); x.type = "button"; x.setAttribute("aria-label", "Cerrar"); x.onclick = () => dlg.close();
+  head.append(h, x);
+
+  const field = (label, input) => { const l = el("label", "ed-field"); l.append(el("span", "ed-lbl", label), input); return l; };
+  const tt = el("textarea", "ed-input"); tt.rows = 2; tt.value = it.titulo; tt.id = "ed-titulo";
+  const cs = el("select", "ed-input"); cs.id = "ed-cat"; CFG.cats.forEach(c => cs.append(new Option(c, c, false, c === it.categoria)));
+  const fd = el("input", "ed-input"); fd.type = "date"; fd.value = it.fecha || ""; fd.id = "ed-fecha";
+  const quick = el("div", "ed-quick");
+  (opts.quick || [["Hoy", today()], ["Mañana", addDays(today(), 1)], ["Sin fecha", ""]]).forEach(([l, d]) => {
+    const b = el("button", "ed-chip", l); b.type = "button"; b.onclick = () => { fd.value = d; }; quick.append(b);
+  });
+  const fw = el("div", "ed-datewrap"); fw.append(fd, quick);
+  const nt = el("textarea", "ed-input"); nt.rows = 3; nt.value = it.resumen || ""; nt.id = "ed-notas"; nt.placeholder = "Detalles, pasos, lo que necesites recordar";
+  form.append(head, field("Título", tt), field("Categoría", cs), field("Fecha", fw));
+  let tp = null;
+  if (opts.tipo) {
+    tp = el("div", "ed-seg"); tp.setAttribute("role", "radiogroup"); tp.setAttribute("aria-label", "Tipo");
+    [["tarea", "Tarea"], ["idea", "Idea"]].forEach(([v, l]) => {
+      const b = el("button", "ed-segbtn", l); b.type = "button"; b.dataset.v = v; b.setAttribute("role", "radio"); b.setAttribute("aria-checked", (it.tipo || "tarea") === v);
+      b.onclick = () => tp.querySelectorAll("button").forEach(o => o.setAttribute("aria-checked", o === b)); tp.append(b);
+    });
+    form.append(field("Tipo", tp));
+  }
+  form.append(field("Notas", nt));
+  if (it.url) { const a = el("a", "ed-link", "Abrir enlace original ↗"); a.href = it.url; a.target = "_blank"; a.rel = "noopener"; form.append(a); }
+  if (retraso(it)) form.append(el("p", "ed-note", "Retraso: " + plural(retraso(it), "día", "días") + " desde la fecha límite (" + F.short.format(D(it.fecha)) + ")."));
+
+  const act = el("div", "ed-actions");
+  const del = deleteButton("ed-del", it, "Borrar", "Pulsa otra vez para borrar");
+  const origDel = del.onclick; del.onclick = () => { const was = del.classList.contains("confirm"); origDel(); if (was) dlg.close(); };
+  const done = el("button", "ed-done", it.hecho ? "Marcar pendiente" : "Marcar hecha"); done.type = "button";
+  done.onclick = () => { Store.change(it, { hecho: !it.hecho }); dlg.close(); };
+  const save = el("button", "ed-save", "Guardar"); save.type = "submit";
+  act.append(del, done, save);
+  form.append(act);
+  form.addEventListener("submit", e => {
+    e.preventDefault();
+    const c = {};
+    const ti = tt.value.trim(); if (ti && ti !== it.titulo) c.titulo = ti.slice(0, 200);
+    if (cs.value !== it.categoria) c.categoria = cs.value;
+    if (fd.value !== (it.fecha || "")) { c.fecha = fd.value; c.aplazada = 0; }
+    if (nt.value.trim() !== (it.resumen || "")) c.resumen = nt.value.trim().slice(0, 2000);
+    if (tp) { const v = tp.querySelector('[aria-checked="true"]').dataset.v; if (v !== (it.tipo || "tarea")) c.tipo = v; }
+    if (Object.keys(c).length) Store.change(it, c);
+    dlg.close();
+  });
+  tt.addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); form.requestSubmit(); } });
+  dlg.append(form);
+  dlg.showModal();
+  tt.focus(); tt.setSelectionRange(tt.value.length, tt.value.length);
+}
+
+// Category manager: create, rename and delete. The page passes onCats to redraw its controls.
+const errMsg = e => String(e && e.message || e || "Error desconocido").replace(/^Error:\s*/, "").replace(/^Exception:\s*/, "");
+let onCats = () => {};
+async function catOp(fn, ...args) {
+  const lista = await api(fn, ...args);
+  CFG.cats.splice(0, CFG.cats.length, ...lista);
+  onCats();
+  await Store.load();
+}
+
+function openCatManager() {
+  let dlg = document.getElementById("catmgr");
+  if (!dlg) { dlg = el("dialog", "ed"); dlg.id = "catmgr"; document.body.append(dlg); dlg.addEventListener("click", e => { if (e.target === dlg) dlg.close(); }); }
+  const draw = (msg) => {
+    dlg.innerHTML = "";
+    const form = el("form", "ed-form"); form.method = "dialog";
+    const head = el("div", "ed-head");
+    const x = el("button", "ed-close", "✕"); x.type = "button"; x.setAttribute("aria-label", "Cerrar"); x.onclick = () => dlg.close();
+    head.append(el("h2", "ed-title", "Categorías"), x);
+    form.append(head, el("p", "ed-help", "Cambia el nombre y pulsa Guardar. Si borras una categoría, sus tareas pasan a la que elijas."));
+    const ul = el("ul", "cm-list");
+    CFG.cats.forEach(c => {
+      const li = el("li", "cm-row");
+      const n = Store.items.filter(i => i.categoria === c).length;
+      const inp = el("input", "ed-input cm-name"); inp.value = c; inp.setAttribute("aria-label", "Nombre de " + c); inp.maxLength = 40;
+      const count = el("span", "cm-count", plural(n, "nota", "notas"));
+      const save = el("button", "cm-save", "Guardar"); save.type = "button"; save.hidden = true;
+      inp.oninput = () => { save.hidden = !inp.value.trim() || inp.value.trim() === c; };
+      const doRename = async () => {
+        save.disabled = true;
+        try { await catOp("renombrarCategoria", c, inp.value); draw("Renombrada a «" + inp.value.trim() + "»."); }
+        catch (e) { draw(errMsg(e)); }
+      };
+      save.onclick = doRename;
+      inp.onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); if (!save.hidden) doRename(); } };
+      const del = el("button", "cm-del", "Borrar"); del.type = "button";
+      del.onclick = () => {
+        if (CFG.cats.length <= 1) { draw("Necesitas al menos una categoría."); return; }
+        const box = el("div", "cm-confirm");
+        const others = CFG.cats.filter(o => o !== c);
+        const sel = el("select", "ed-input"); others.forEach(o => sel.append(new Option(o, o))); sel.setAttribute("aria-label", "Mover las notas a");
+        const ok = el("button", "cm-ok", "Borrar «" + c + "»"); ok.type = "button";
+        const no = el("button", "cm-no", "Cancelar"); no.type = "button"; no.onclick = () => draw();
+        ok.onclick = async () => { ok.disabled = true; try { await catOp("eliminarCategoria", c, sel.value); draw("Categoría borrada."); } catch (e) { draw(errMsg(e)); } };
+        box.append(el("span", "ed-lbl", n ? "Mover sus " + plural(n, "nota", "notas") + " a:" : "No tiene notas."), n ? sel : "", el("div", "cm-btns"));
+        box.lastChild.append(no, ok);
+        li.append(box); del.hidden = true;
+      };
+      li.append(el("span", "cm-dot"), inp, count, save, del);
+      li.firstChild.style.background = typeof catColorOf === "function" ? catColorOf(c) : "currentColor";
+      ul.append(li);
+    });
+    const add = el("div", "cm-add");
+    const ni = el("input", "ed-input"); ni.placeholder = "Nueva categoría"; ni.maxLength = 40; ni.setAttribute("aria-label", "Nueva categoría");
+    const nb = el("button", "ed-save", "Añadir"); nb.type = "submit";
+    add.append(ni, nb);
+    form.append(ul, add);
+    if (msg) form.append(el("p", "ed-note", msg));
+    form.addEventListener("submit", async e => {
+      e.preventDefault(); if (!ni.value.trim()) { ni.focus(); return; }
+      nb.disabled = true;
+      try { await catOp("crearCategoria", ni.value); draw("Añadida «" + ni.value.trim() + "»."); }
+      catch (err) { draw(errMsg(err)); }
+    });
+    dlg.append(form);
+  };
+  draw();
+  if (!dlg.open) dlg.showModal();
+}
+
+function ytId(url) { const m = String(url).match(/(?:youtu\.be\/|v=|shorts\/|embed\/)([\w-]{11})/); return m ? m[1] : null; }
+</script>
+
+<script>
+const PASTEL = ["var(--peach)","var(--sky)","var(--mint)","var(--lilac)","var(--butter)","var(--rose)","var(--sage)"];
+const catColor = c => PASTEL[Math.max(0, CFG.cats.indexOf(c)) % PASTEL.length];
+const PAW = '<path fill="currentColor" d="M12 13.2c-2.7 0-5 2.3-5 4.4 0 1.5 1.2 2.4 2.6 2.4 1 0 1.6-.5 2.4-.5s1.4.5 2.4.5c1.4 0 2.6-.9 2.6-2.4 0-2.1-2.3-4.4-5-4.4z"/><ellipse fill="currentColor" cx="6.2" cy="10.6" rx="2" ry="2.5"/><ellipse fill="currentColor" cx="9.6" cy="6.6" rx="2" ry="2.6"/><ellipse fill="currentColor" cx="14.4" cy="6.6" rx="2" ry="2.6"/><ellipse fill="currentColor" cx="17.8" cy="10.6" rx="2" ry="2.5"/>';
+document.querySelectorAll(".pawicon").forEach(s => s.innerHTML = PAW);
+$("#barPaw").innerHTML = PAW; $("#barPaw").style.color = "var(--shiba-dk)";
+
+// Shiba dibujado a mano en SVG: mood = "hola" | "feliz" | "dormido" | "culo"
+function shiba(mood) {
+  if (mood === "culo") return `<svg class="shiba" viewBox="0 0 124 124" role="img" aria-label="Shiba de espaldas enseñando el culete">
+    <ellipse cx="62" cy="116" rx="40" ry="5" fill="#d97b33" opacity=".15"/>
+    <path d="M38 26 44 4l14 16z" fill="#ef9a4f"/><path d="M86 26 80 4 66 20z" fill="#ef9a4f"/>
+    <ellipse cx="62" cy="30" rx="26" ry="20" fill="#ef9a4f"/>
+    <ellipse cx="62" cy="76" rx="42" ry="38" fill="#ef9a4f"/>
+    <path d="M62 74c-9-14-32-8-28 10 3 13 17 22 28 26 11-4 25-13 28-26 4-18-19-24-28-10z" fill="#fff6ea"/>
+    <path d="M62 70c-17-3-21-25-1-28 15-2 20 14 7 19" stroke="#ef9a4f" stroke-width="11" fill="none" stroke-linecap="round"/>
+    <path d="M62 70c-17-3-21-25-1-28 15-2 20 14 7 19" stroke="#fff6ea" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <path d="M60 92q2 4 4 0" stroke="#e7a98c" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+    <ellipse cx="42" cy="110" rx="10" ry="6" fill="#fff6ea"/><ellipse cx="82" cy="110" rx="10" ry="6" fill="#fff6ea"/>
+  </svg>`;
+  const open = '<ellipse cx="46" cy="58" rx="5.4" ry="6.4" fill="#3b2a24"/><ellipse cx="74" cy="58" rx="5.4" ry="6.4" fill="#3b2a24"/><circle cx="48" cy="55.4" r="2" fill="#fff"/><circle cx="76" cy="55.4" r="2" fill="#fff"/><circle cx="44.6" cy="61" r="1" fill="#fff"/><circle cx="72.6" cy="61" r="1" fill="#fff"/>';
+  const eyes = mood === "feliz"
+    ? '<path d="M40 60q6-7 12 0M68 60q6-7 12 0" stroke="#3b2a24" stroke-width="3.2" fill="none" stroke-linecap="round"/>'
+    : mood === "dormido"
+    ? '<path d="M40 59q6 5 12 0M68 59q6 5 12 0" stroke="#3b2a24" stroke-width="3.2" fill="none" stroke-linecap="round"/>'
+    : open;
+  const tongue = '<path d="M51 75q9 10 18 0z" fill="#3b2a24"/><path d="M55 78c0 9 10 9 10 0q-5 3-10 0z" fill="#ff7d8f"/><path d="M60 79v5" stroke="#e25a6e" stroke-width="1.4" stroke-linecap="round"/>';
+  const mouth = mood === "dormido"
+    ? '<path d="M56 76q4 3 8 0" stroke="#3b2a24" stroke-width="2.4" fill="none" stroke-linecap="round"/>'
+    : '<path d="M60 72v3M60 75q-5 5-10 1M60 75q5 5 10 1" stroke="#3b2a24" stroke-width="2.4" fill="none" stroke-linecap="round"/>' + tongue;
+  const zz = mood === "dormido" ? '<text x="96" y="22" font-family="Fredoka,sans-serif" font-weight="700" font-size="16" fill="#d97b33">z</text><text x="106" y="10" font-family="Fredoka,sans-serif" font-weight="700" font-size="11" fill="#d97b33">z</text>' : '';
+  const paw = mood === "hola" ? '<g class="wave"><ellipse cx="104" cy="92" rx="11" ry="13" fill="#ef9a4f" transform="rotate(-18 104 92)"/><ellipse cx="104" cy="96" rx="7" ry="7.5" fill="#fff6ea" transform="rotate(-18 104 92)"/></g>' : '';
+  const sparkle = mood !== "dormido" ? '<path d="M16 22l2 5 5 2-5 2-2 5-2-5-5-2 5-2z" fill="#ffc94d"/><path d="M108 40l1.4 3.4 3.4 1.4-3.4 1.4-1.4 3.4-1.4-3.4-3.4-1.4 3.4-1.4z" fill="#ffc94d"/>' : '';
+  return `<svg class="shiba" viewBox="0 0 124 120" role="img" aria-label="Shiba ${mood === "dormido" ? "dormido" : "feliz con la lengua fuera"}">
+    <path d="M60 104c-24 0-40-8-40-18h80c0 10-16 18-40 18z" fill="#d97b33" opacity=".18"/>
+    <path d="M22 44 30 8l24 22z" fill="#ef9a4f"/><path d="M98 44 90 8 66 30z" fill="#ef9a4f"/>
+    <path d="M29 36 33 17l12 11z" fill="#ffd2b8"/><path d="M91 36 87 17 75 28z" fill="#ffd2b8"/>
+    <ellipse cx="60" cy="62" rx="44" ry="38" fill="#ef9a4f"/>
+    <path d="M24 70c4 18 18 28 36 28s32-10 36-28c-8 4-16 2-22-4-4 4-9 6-14 6s-10-2-14-6c-6 6-14 8-22 4z" fill="#fff6ea"/>
+    <ellipse cx="46" cy="45" rx="4" ry="2.6" fill="#fff6ea"/><ellipse cx="74" cy="45" rx="4" ry="2.6" fill="#fff6ea"/>
+    ${eyes}
+    <ellipse cx="60" cy="69" rx="5.6" ry="4" fill="#3b2a24"/><ellipse cx="58.4" cy="67.8" rx="1.6" ry="1" fill="#fff" opacity=".6"/>
+    ${mouth}
+    <ellipse cx="33" cy="71" rx="7" ry="4" fill="#ffadb8" opacity=".8"/><ellipse cx="87" cy="71" rx="7" ry="4" fill="#ffadb8" opacity=".8"/>
+    ${paw}${zz}${sparkle}
+  </svg>`;
+}
+
+const d0 = F.long.format(new Date());
+$("#date").textContent = cap(d0);
+$("#hello").textContent = "¡Hola, " + CFG.nombre + "!";
+
+// Formulario: pegatinas de categoría y botones rápidos de fecha
+let cat = CFG.cats[0], picked = null, dayFilter = null, catFilter = null;
+function buildStickers() {
+  if (CFG.cats.indexOf(cat) < 0) cat = CFG.cats[0];
+  $("#cats").innerHTML = "";
+  CFG.cats.forEach(c => {
+    const b = el("button", "sticker", c); b.type = "button"; b.setAttribute("role", "radio"); b.style.setProperty("--c", catColor(c));
+    b.setAttribute("aria-checked", c === cat);
+    b.onclick = () => { cat = c; document.querySelectorAll(".sticker").forEach(s => s.setAttribute("aria-checked", s === b)); };
+    $("#cats").append(b);
+  });
+  const ed = el("button", "sticker edit", "✎ Editar"); ed.type = "button"; ed.onclick = openCatManager; $("#cats").append(ed);
+}
+const catColorOf = catColor;
+onCats = buildStickers;
+buildStickers();
+function setWhen(d) {
+  picked = d; $("#fecha").value = d || "";
+  document.querySelectorAll("#when button").forEach(b => b.setAttribute("aria-pressed", b.dataset.val === d));
+}
+document.querySelectorAll("#when button").forEach(b => {
+  b.dataset.val = b.dataset.d === "fri" ? nextWeekday(5) : addDays(today(), +b.dataset.d);
+  b.onclick = () => setWhen(picked === b.dataset.val ? null : b.dataset.val);
+});
+$("#fecha").onchange = e => setWhen(e.target.value || null);
+
+$("#f").addEventListener("submit", async e => {
+  e.preventDefault();
+  const text = $("#txt").value.trim();
+  if (!text) { $("#status").textContent = "Escribe la tarea antes de apuntarla."; $("#txt").focus(); return; }
+  $("#add").disabled = true; $("#status").textContent = "Apuntando…";
+  try {
+    const o = await Store.add(text, picked || "", cat);
+    $("#txt").value = ""; setWhen(null);
+    $("#status").textContent = o.fecha ? "¡Apuntada para el " + F.short.format(D(o.fecha)) + "!" : "¡Apuntada! Ponle un día para que te avise.";
+    const s = $("#shiba .shiba"); if (s) { s.classList.remove("bounce"); void s.offsetWidth; s.classList.add("bounce"); }
+  } catch (err) { $("#status").textContent = "No se pudo apuntar: " + errMsg(err); }
+  $("#add").disabled = false;
+});
+$("#txt").addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); $("#f").requestSubmit(); } });
+
+Store.onerror = m => { $("#summary").textContent = m; $("#status").textContent = m; };
+Store.onchange = render;
+
+function render() {
+  if (!Store.loaded) { $("#shiba").innerHTML = shiba("hola"); return; }
+  const t = today(), pend = Store.pending();
+  const hoy = Store.items.filter(i => i.fecha && i.fecha <= t && !i.hecho);
+  const hechasHoy = Store.items.filter(i => i.hecho && i.fecha === t).length;
+  const pronto = pend.filter(i => i.fecha && daysTo(i.fecha) >= 1 && daysTo(i.fecha) <= 3).length;
+  const mood = "hola";
+  $("#shiba").innerHTML = shiba(mood);
+
+  const sum = $("#summary"); sum.innerHTML = "";
+  if (!Store.items.length) sum.textContent = "Tu agenda está vacía. Apunta abajo tu primera tarea.";
+  else if (!hoy.length) sum.textContent = pronto ? "Hoy lo tienes todo hecho. " + plural(pronto, "tarea se acerca", "tareas se acercan") + "." : "Hoy lo tienes todo hecho. ¡A descansar!";
+  else { sum.append("Hoy tienes "); const b = el("b", null, plural(hoy.length, "tarea", "tareas")); sum.append(b); if (pronto) sum.append(" y " + plural(pronto, "se acerca", "se acercan") + " pronto."); else sum.append("."); }
+
+  const total = hoy.length + hechasHoy;
+  $("#progress").hidden = !total;
+  if (total) {
+    const pct = Math.round(hechasHoy / total * 100);
+    $("#progTxt").textContent = hechasHoy + " de " + total + " hoy";
+    $("#barFill").style.width = pct + "%"; $("#barPaw").style.left = Math.max(4, pct) + "%";
+  }
+
+  const wk = $("#week"); wk.innerHTML = "";
+  for (let i = 0; i < 7; i++) {
+    const d = addDays(t, i), n = pend.filter(x => x.fecha === d || (i === 0 && x.fecha && x.fecha < t)).length;
+    const b = el("button", "day" + (i === 0 ? " today" : "")); b.type = "button";
+    b.setAttribute("aria-pressed", dayFilter === d);
+    b.setAttribute("aria-label", cap(F.long.format(D(d))) + ", " + plural(n, "tarea", "tareas"));
+    b.append(el("span", "wd", i === 0 ? "hoy" : F.wd.format(D(d)).replace(".", "")), el("span", "n", F.day.format(D(d))));
+    const dots = el("span", "dots"); for (let j = 0; j < Math.min(n, 3); j++) dots.append(el("span")); b.append(dots);
+    b.onclick = () => { dayFilter = dayFilter === d ? null : d; catFilter = null; render(); };
+    wk.append(b);
+  }
+
+  const list = $("#list"); list.innerHTML = "";
+  if (!Store.items.length) {
+    const e = el("div", "empty"); e.innerHTML = shiba("culo"); e.append(el("span", null, "Aquí aparecerán tus tareas. Escribe una arriba, elige su pegatina y el día."));
+    list.append(e); return;
+  }
+  /* Pegatinas para ver una categoría (y ordenarla a mano) */
+  if (catFilter && CFG.cats.indexOf(catFilter) < 0) catFilter = null;
+  const cb = $("#catbar"); cb.innerHTML = "";
+  ["Todas"].concat(CFG.cats).forEach(c => {
+    const n = c === "Todas" ? pend.length : pend.filter(i => i.categoria === c).length;
+    const b = el("button", "catchip"); b.type = "button";
+    if (c !== "Todas") b.style.setProperty("--c", catColor(c));
+    b.setAttribute("aria-pressed", c === "Todas" ? !catFilter : catFilter === c);
+    b.append(c, el("span", null, n));
+    b.onclick = () => { catFilter = c === "Todas" ? null : c; dayFilter = null; render(); };
+    cb.append(b);
+  });
+
+  if (catFilter) {
+    const pendC = pend.filter(i => i.categoria === catFilter).sort(byOrder);
+    const doneC = Store.items.filter(i => i.hecho && i.categoria === catFilter).sort(byDate).reverse();
+    const s = el("section", "manual"), h = el("h2", null, catFilter); h.append(el("small", null, pendC.length));
+    s.append(h);
+    if (pendC.length > 1) s.append(el("p", "hint", "Arrastra el asa ⠿ o usa las flechas para ordenarlas como quieras."));
+    const ul = el("ul", "sortable");
+    pendC.forEach((it, i) => ul.append(row(it, { list: pendC, i })));
+    s.append(ul); list.append(s);
+    if (!pendC.length) { const e = el("div", "empty"); e.innerHTML = shiba("culo"); e.append(el("span", null, "No hay nada pendiente en " + catFilter + ".")); list.append(e); }
+    if (window.Sortable && pendC.length > 1) Sortable.create(ul, { handle: ".grip", animation: 160, ghostClass: "ghost", onEnd: () => saveOrder([...ul.children].map(li => li.dataset.id)) });
+    if (doneC.length) { const s2 = el("section", "done"), h2 = el("h2", null, "Hechas"); h2.append(el("small", null, doneC.length)); const u2 = el("ul"); doneC.slice(0, 5).forEach(it => u2.append(row(it))); s2.append(h2, u2); list.append(s2); }
+    const f = el("div", "footer"); f.innerHTML = shiba("culo"); f.append(el("span", null, "¡Eso es todo por aquí!")); list.append(f);
+    return;
+  }
+
+  let groups;
+  if (dayFilter) {
+    const its = Store.items.filter(i => i.fecha === dayFilter || (dayFilter === t && !i.hecho && i.fecha && i.fecha < t));
+    groups = [[cap(F.long.format(D(dayFilter))), "", its]];
+  } else {
+    /* Todas: una sección por categoría, cada una en el orden que haya puesto Miriam */
+    groups = CFG.cats.map(c => [c, "cat", pend.filter(i => i.categoria === c).sort(byOrder), c]);
+    const sueltas = pend.filter(i => CFG.cats.indexOf(i.categoria) < 0);
+    if (sueltas.length) groups.push(["Otras", "cat", sueltas.sort(byOrder)]);
+    groups.push(["Hechas", "done", Store.items.filter(i => i.hecho).sort(byDate).reverse()]);
+  }
+  for (const [label, cls, its, catName] of groups) {
+    if (!its.length) continue;
+    const s = el("section", cls), h = el("h2", null, label); h.append(el("small", null, its.length));
+    if (catName) {
+      h.style.setProperty("--c", catColor(catName));
+      const go = el("button", "sortlink", "Ordenar"); go.type = "button"; go.setAttribute("aria-label", "Ordenar " + catName);
+      go.onclick = () => { catFilter = catName; dayFilter = null; render(); scrollTo({ top: $("#catbar").offsetTop - 10, behavior: "smooth" }); };
+      h.append(go);
+    }
+    const ul = el("ul"); const max = cls === "done" ? 5 : 99;
+    its.slice(0, max).forEach(it => ul.append(row(it)));
+    s.append(h, ul);
+    if (its.length > max) { const m = el("button", "more", "Ver las " + its.length + " hechas"); m.type = "button"; m.onclick = () => { ul.innerHTML = ""; its.forEach(it => ul.append(row(it))); m.remove(); }; s.append(m); }
+    list.append(s);
+  }
+  if (!list.children.length) { const e = el("div", "empty"); e.innerHTML = shiba("culo"); e.append(el("span", null, "Nada para este día. ¡Me voy a dar una vuelta!")); list.append(e); }
+  else { const f = el("div", "footer"); f.innerHTML = shiba("culo"); f.append(el("span", null, "¡Eso es todo por aquí!")); list.append(f); }
+}
+
+const byOrder = (a, b) => ((a.orden == null ? 1e9 : a.orden) - (b.orden == null ? 1e9 : b.orden)) || byDate(a, b);
+
+function saveOrder(ids) {
+  ids.forEach((id, i) => { const it = Store.items.find(x => x.id === id); if (it) it.orden = i; });
+  render();
+  api("reordenar", ids).catch(e => { $("#status").textContent = "No se guardó el orden: " + errMsg(e); Store.load(); });
+}
+
+function row(it, manual) {
+  const li = el("li" , (it.hecho ? "done" : "") + (manual ? " movable" : ""));
+  li.dataset.id = it.id;
+  const chk = el("button", "paw"); chk.type = "button"; chk.setAttribute("role", "checkbox"); chk.setAttribute("aria-checked", !!it.hecho);
+  chk.setAttribute("aria-label", "Hecha: " + it.titulo); chk.innerHTML = '<svg viewBox="0 0 24 24" style="color:#fff">' + PAW + '</svg>';
+  chk.onclick = () => Store.change(it, { hecho: !it.hecho });
+  const t = el("button", "t", it.titulo); t.type = "button"; t.setAttribute("aria-label", "Editar: " + it.titulo);
+  t.onclick = () => openEditor(it, { quick: [["Hoy", today()], ["Mañana", addDays(today(), 1)], ["Viernes", nextWeekday(5)], ["Sin día", ""]] });
+  const info = el("div", "info");
+  const tag = el("span", "tag", it.categoria); tag.style.setProperty("--c", catColor(it.categoria)); info.append(tag);
+  const n = it.fecha ? daysTo(it.fecha) : null;
+  if (!it.hecho && n !== null && n >= 1 && n <= 3) info.append(el("span", "alert", n === 1 ? "¡mañana!" : "en " + n + " días"));
+  if (retraso(it)) info.append(el("span", "alert late", "Retraso: " + plural(retraso(it), "día", "días")));
+  const d = el("input"); d.type = "date"; d.value = it.fecha || ""; d.setAttribute("aria-label", "Cambiar día");
+  d.onchange = () => Store.change(it, { fecha: d.value, aplazada: 0 });
+  info.append(d);
+  li.append(chk, t, deleteButton("del", it, "Borrar", "¿Seguro?"), info);
+  if (manual) {
+    const ids = manual.list.map(x => x.id);
+    const move = dir => { const j = manual.i + dir; [ids[manual.i], ids[j]] = [ids[j], ids[manual.i]]; saveOrder(ids); };
+    const tools = el("div", "order");
+    const up = el("button", "arrow", "↑"); up.type = "button"; up.setAttribute("aria-label", "Subir " + it.titulo); up.disabled = manual.i === 0; up.onclick = () => move(-1);
+    const dn = el("button", "arrow", "↓"); dn.type = "button"; dn.setAttribute("aria-label", "Bajar " + it.titulo); dn.disabled = manual.i === manual.list.length - 1; dn.onclick = () => move(1);
+    const grip = el("span", "grip", "⠿"); grip.setAttribute("aria-hidden", "true"); grip.title = "Arrastra para ordenar";
+    tools.append(up, grip, dn);
+    li.prepend(tools);
+  }
+  return li;
+}
+
+render();
+Store.load();
+</script>
+<script>
+if (!CFG.k) { document.body.innerHTML = '<p style="font-family:sans-serif;padding:24px;max-width:40ch">Falta la clave en el enlace. Abre tu enlace personal completo (termina en #k=...).</p>'; }
+else api("config").then(c => { CFG.cats.splice(0, CFG.cats.length, ...c.cats); onCats(); Store.onchange(); }).catch(() => {});
+</script>
+</body>
+</html>
