@@ -10,6 +10,7 @@
 <style>
 /* Agenda digital cute: shiba que saluda arriba, tira de la semana, pegatinas por categoría, tareas como fichas redondas. */
 :root{
+  --sky1:#bfe3ff; --sky2:#fff1ea; --far:#b7c6e8; --near:#98aedb; --snow:#ffffff; --grass:#bfe6c4; --grass2:#a5d9b0;
   --bg:#fff4ef; --bg2:#ffe9e1; --card:#ffffff; --ink:#4a3631; --soft:#8f7770; --line:#f5dcd3;
   --shiba:#ef9a4f; --shiba-dk:#d97b33; --cream:#fff6ea; --blush:#ffadb8;
   --mint:#c6ecd9; --lilac:#ddd3fb; --peach:#ffd9c2; --sky:#cfe6ff; --butter:#fff0b3; --rose:#ffd3df; --sage:#e2efc6;
@@ -18,7 +19,7 @@
 }
 @media (prefers-color-scheme:dark){:root{
   --bg:#2a2130; --bg2:#33283b; --card:#3a2e43; --ink:#fbeff2; --soft:#c6b2bd; --line:#4a3c54;
-  --cream:#fff3e3; --late:#ff8a98; color-scheme:dark}}
+  --cream:#fff3e3; --late:#ff8a98; --sky1:#2c3566; --sky2:#4a3c5c; --far:#55618f; --near:#475283; --snow:#e8ecff; --grass:#3f6a55; --grass2:#36604b; color-scheme:dark}}
 *{box-sizing:border-box}
 html{background:var(--bg)}
 body{margin:0;color:var(--ink);font:16px/1.5 var(--body);
@@ -29,7 +30,18 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;tou
 button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid var(--shiba);outline-offset:2px}
 
 /* Saludo */
-.hero{display:grid;grid-template-columns:118px 1fr;align-items:end;gap:6px;margin-top:6px}
+.hero{position:relative;margin-top:4px}
+.scene{border-radius:28px;overflow:hidden;box-shadow:0 5px 0 var(--line);background:var(--sky1)}
+.scene>svg{display:block;width:100%;height:auto}
+.hero .bubble{position:relative;margin:14px 0 0;padding:12px 16px;border-radius:22px}
+.hero .bubble::before{content:"";position:absolute;top:-10px;left:58%;width:20px;height:20px;background:var(--card);transform:rotate(45deg);border-radius:4px}
+.hero .bubble h1{font-size:1.3rem}
+.hero .bubble p{font-size:.88rem}
+
+.pet{transform-box:fill-box;transform-origin:50% 100%}
+.pet.bounce{animation:bounce .6s ease}
+.kid .arm{transform-box:fill-box;transform-origin:20% 90%;animation:kidwave 1.4s ease-in-out 3}
+@keyframes kidwave{25%{transform:rotate(-16deg)}50%{transform:rotate(6deg)}75%{transform:rotate(-12deg)}}
 .shiba{width:118px;height:auto;display:block;filter:drop-shadow(0 6px 0 rgba(217,123,51,.15))}
 .shiba.bounce{animation:bounce .6s ease}
 @keyframes bounce{30%{transform:translateY(-10px) rotate(-4deg)}60%{transform:translateY(0) rotate(2deg)}}
@@ -173,7 +185,7 @@ section.cat h2::before{content:"";width:14px;height:14px;border-radius:50%;backg
 <body>
 <main class="app">
   <div class="hero">
-    <div id="shiba"></div>
+    <div id="scene" class="scene"></div>
     <div class="bubble">
       <p class="date" id="date"></p>
       <h1 id="hello"></h1>
@@ -427,6 +439,56 @@ const PAW = '<path fill="currentColor" d="M12 13.2c-2.7 0-5 2.3-5 4.4 0 1.5 1.2 
 document.querySelectorAll(".pawicon").forEach(s => s.innerHTML = PAW);
 $("#barPaw").innerHTML = PAW; $("#barPaw").style.color = "var(--shiba-dk)";
 
+// Escena de los Alpes: Mont Blanc (Francia) y Cervino (Suiza), Iván y el shiba en el prado
+function ivan() {
+  return `<g class="kid" aria-label="Iván">
+    <ellipse cx="30" cy="104" rx="20" ry="4" fill="#000" opacity=".12"/>
+    <rect x="18" y="80" width="9" height="20" rx="4" fill="#3d5a99"/><rect x="31" y="80" width="9" height="20" rx="4" fill="#3d5a99"/>
+    <path d="M15 100h14v4H13a2 2 0 0 1 2-4zM31 100h14a2 2 0 0 1 2 4H31z" fill="#ef6f5e"/>
+    <rect x="6" y="50" width="12" height="26" rx="5" fill="#f2b33d"/>
+    <path d="M14 52q0-8 15-8t15 8v28H14z" fill="#e8574a"/>
+    
+    
+    <path d="M15 56q-6 10-3 20" stroke="#e8574a" stroke-width="7" fill="none" stroke-linecap="round"/>
+    <g class="arm"><path d="M43 55q8-8 9-22" stroke="#e8574a" stroke-width="7" fill="none" stroke-linecap="round"/><circle cx="52" cy="30" r="5" fill="#f6cfae"/></g>
+    <circle cx="29" cy="28" r="17" fill="#f6cfae"/>
+    <path d="M12 26q1-16 17-16t17 14q-6-5-12-3-4-6-10-1-7-2-12 6z" fill="#7a4a2b"/>
+    <circle cx="12.5" cy="30" r="3.4" fill="#f0bf9c"/><circle cx="45.5" cy="30" r="3.4" fill="#f0bf9c"/>
+    <circle cx="23" cy="30" r="2.4" fill="#3b2a24"/><circle cx="35" cy="30" r="2.4" fill="#3b2a24"/>
+    <circle cx="23.8" cy="29.2" r=".8" fill="#fff"/><circle cx="35.8" cy="29.2" r=".8" fill="#fff"/>
+    <ellipse cx="19" cy="36" rx="3.4" ry="2" fill="#ffadb8" opacity=".8"/><ellipse cx="39" cy="36" rx="3.4" ry="2" fill="#ffadb8" opacity=".8"/>
+    <path d="M24 37q5 6 10 0z" fill="#b8434f"/>
+    <text x="29.5" y="64" text-anchor="middle" font-family="Fredoka,sans-serif" font-weight="700" font-size="6.6" letter-spacing=".3" fill="#fff">IVÁN</text>
+  </g>`;
+}
+
+function scene(mood) {
+  const pet = shiba(mood).replace('<svg class="shiba"', '<svg class="shiba" x="0" y="0" width="70" height="68"');
+  return `<svg viewBox="0 0 360 200" role="img" aria-label="Iván y el shiba en los Alpes, con el Mont Blanc y el Cervino al fondo">
+    <defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--sky1)"/><stop offset="1" style="stop-color:var(--sky2)"/></linearGradient></defs>
+    <rect width="360" height="200" fill="url(#sky)"/>
+    <circle cx="320" cy="30" r="14" fill="#ffd56b" opacity=".9"/><circle cx="320" cy="30" r="21" fill="#ffd56b" opacity=".2"/>
+    <g fill="#fff" opacity=".85"><ellipse cx="236" cy="30" rx="18" ry="6"/><ellipse cx="248" cy="26" rx="12" ry="6"/><ellipse cx="330" cy="72" rx="14" ry="4.5"/></g>
+    <path d="M150 150 192 96l16 10 22-24 34 40 34 28z" style="fill:var(--far)"/>
+    <path d="M220 92l10-10 14 16-8-2-6 6-4-6z" style="fill:var(--snow)"/>
+    <path d="M200 160 262 46l10 12 4-4 62 106z" style="fill:var(--near)"/>
+    <path d="M252 64l10-18 10 12 4-4 10 18-9-4-6 6-6-8-7 6z" style="fill:var(--snow)"/>
+    <path d="M262 46l3 30" stroke="rgba(0,0,0,.08)" stroke-width="3"/>
+    <path d="M-10 160 44 96l18 10 30-30 42 44 40 40z" style="fill:var(--far)"/>
+    <path d="M62 106l30-30 22 22-10-3-9 8-7-7-12 10z" style="fill:var(--snow)"/>
+    <g font-family="Fredoka,sans-serif" font-weight="600" font-size="8.5" fill="#4a3631" opacity=".75">
+      <text x="78" y="56" text-anchor="middle">Mont Blanc</text><text x="298" y="72" text-anchor="middle">Cervino</text></g>
+    <g transform="translate(92 62)"><path d="M0 0v14" stroke="#4a3631" stroke-width="1"/><rect x="1" y="0" width="4" height="7" fill="#2f5fbd"/><rect x="5" y="0" width="4" height="7" fill="#fff"/><rect x="9" y="0" width="4" height="7" fill="#e5484d"/></g>
+    <g transform="translate(264 32)"><path d="M0 0v14" stroke="#4a3631" stroke-width="1"/><rect x="1" y="0" width="9" height="9" fill="#e5484d"/><path d="M5.5 2v5M3 4.5h5" stroke="#fff" stroke-width="1.6"/></g>
+    <path d="M0 150q90-26 180-8t180-4v62H0z" style="fill:var(--grass2)"/>
+    <path d="M0 166q100-22 200-4t160 0v38H0z" style="fill:var(--grass)"/>
+    <g fill="#3f7a5a"><path d="M24 156l9-22 9 22z"/><path d="M34 160l8-18 8 18z"/><path d="M336 154l8-20 8 20z"/><path d="M322 158l7-16 7 16z"/></g>
+    <g><circle cx="80" cy="182" r="2.4" fill="#ff9fb3"/><circle cx="96" cy="190" r="2.4" fill="#fff"/><circle cx="120" cy="180" r="2.4" fill="#ffd56b"/><circle cx="300" cy="186" r="2.4" fill="#fff"/><circle cx="316" cy="178" r="2.4" fill="#ff9fb3"/><circle cx="60" cy="192" r="2.4" fill="#ffd56b"/></g>
+    <g transform="translate(150 92)">${ivan()}</g>
+    <g class="pet" transform="translate(210 128)">${pet}</g>
+  </svg>`;
+}
+
 // Shiba dibujado a mano en SVG: mood = "hola" | "feliz" | "dormido" | "culo"
 function shiba(mood) {
   if (mood === "culo") return `<svg class="shiba" viewBox="0 0 124 124" role="img" aria-label="Shiba de espaldas enseñando el culete">
@@ -507,7 +569,7 @@ $("#f").addEventListener("submit", async e => {
     const o = await Store.add(text, picked || "", cat);
     $("#txt").value = ""; setWhen(null);
     $("#status").textContent = o.fecha ? "¡Apuntada para el " + F.short.format(D(o.fecha)) + "!" : "¡Apuntada! Ponle un día para que te avise.";
-    const s = $("#shiba .shiba"); if (s) { s.classList.remove("bounce"); void s.offsetWidth; s.classList.add("bounce"); }
+    const s = $("#scene .pet"); if (s) { s.classList.remove("bounce"); void s.getBoundingClientRect(); s.classList.add("bounce"); }
   } catch (err) { $("#status").textContent = "No se pudo apuntar: " + errMsg(err); }
   $("#add").disabled = false;
 });
@@ -517,13 +579,13 @@ Store.onerror = m => { $("#summary").textContent = m; $("#status").textContent =
 Store.onchange = render;
 
 function render() {
-  if (!Store.loaded) { $("#shiba").innerHTML = shiba("hola"); return; }
+  if (!Store.loaded) { $("#scene").innerHTML = scene("hola"); return; }
   const t = today(), pend = Store.pending();
   const hoy = Store.items.filter(i => i.fecha && i.fecha <= t && !i.hecho);
   const hechasHoy = Store.items.filter(i => i.hecho && i.fecha === t).length;
   const pronto = pend.filter(i => i.fecha && daysTo(i.fecha) >= 1 && daysTo(i.fecha) <= 3).length;
   const mood = "hola";
-  $("#shiba").innerHTML = shiba(mood);
+  if (!$("#scene").firstChild) $("#scene").innerHTML = scene(mood);
 
   const sum = $("#summary"); sum.innerHTML = "";
   if (!Store.items.length) sum.textContent = "Tu agenda está vacía. Apunta abajo tu primera tarea.";
