@@ -386,6 +386,20 @@ function openEditor(it, opts = {}) {
   const save = el("button", "ed-save", "Guardar"); save.type = "submit";
   act.append(del, done, save);
   form.append(act);
+  if (opts.dup) {
+    const dup = el("button", "ed-dup", "Duplicar tarea"); dup.type = "button";
+    dup.onclick = async () => {
+      dup.disabled = true; dup.textContent = "Duplicando…";
+      try {
+        const o = await Store.add((tt.value.trim() || it.titulo).slice(0, 200), fd.value, cs.value);
+        const extra = {}; const nv = nt.value.trim(); if (nv) extra.resumen = nv.slice(0, 2000);
+        if (it.tipo && it.tipo !== "tarea") extra.tipo = it.tipo;
+        if (Object.keys(extra).length) await Store.change(o, extra);
+        openEditor(o, opts);
+      } catch (e) { dup.disabled = false; dup.textContent = "No se pudo duplicar: " + errMsg(e); }
+    };
+    form.append(dup);
+  }
   form.addEventListener("submit", e => {
     e.preventDefault();
     const c = {};
