@@ -110,7 +110,14 @@ li.done .t{text-decoration:line-through}
 .alert{background:var(--rose);color:#a2364a;padding:1px 9px;border-radius:99px}
 .alert.late{background:#e2596b;color:#fff}
 .info input[type=date]{font:inherit;color:var(--soft);background:transparent;border:none;padding:0;max-width:130px}
-.del{grid-column:3;grid-row:1;color:var(--soft);font-size:.8rem;font-weight:700;padding:6px 4px}
+.acts{grid-column:3;grid-row:1;display:flex;align-items:center;gap:2px}
+.ico{width:34px;height:34px;border-radius:10px;font-size:1rem;color:var(--shiba-dk)}
+.ico:hover{background:var(--bg)}
+.rename{font:700 1rem var(--body);color:var(--ink);background:var(--bg);border:2px solid var(--shiba);border-radius:12px;padding:6px 10px;width:100%;min-width:0}
+.alert.hoy{background:#ffe08a;color:#7a4a00;font-weight:900}
+.fecha{display:inline-flex;align-items:center;cursor:pointer;position:relative}
+.fecha input{position:absolute;inset:0;opacity:0;width:100%;cursor:pointer}
+.del{color:var(--soft);font-size:.8rem;font-weight:700;padding:6px 4px}
 .del.confirm{color:var(--late)}
 .empty{background:var(--card);border-radius:var(--r);padding:20px;text-align:center;font-weight:700;color:var(--soft);box-shadow:0 4px 0 var(--line);display:flex;flex-direction:column;align-items:center;gap:6px}
 .empty svg{width:110px}
@@ -173,7 +180,7 @@ dialog.ed[open]{animation:up .25s cubic-bezier(.3,1.3,.5,1)}
 .hint{margin:-2px 4px 2px;font-size:.85rem;font-weight:700;color:var(--soft)}
 li.movable{grid-template-columns:auto auto 1fr auto}
 li.movable .info{grid-column:3}
-li.movable .del{grid-column:4}
+li.movable .acts{grid-column:4}
 .order{grid-row:1/3;display:flex;flex-direction:column;align-items:center;gap:0;margin:-4px 0}
 .arrow{width:30px;height:24px;border-radius:8px;font-weight:900;color:var(--soft);font-size:.95rem}
 .arrow:disabled{opacity:.25}
@@ -725,12 +732,33 @@ function row(it, manual) {
   const info = el("div", "info");
   const tag = el("span", "tag", it.categoria); tag.style.setProperty("--c", catColor(it.categoria)); info.append(tag);
   const n = it.fecha ? daysTo(it.fecha) : null;
+  if (!it.hecho && n === 0) info.append(el("span", "alert hoy", "⚠️ ¡HOY!"));
   if (!it.hecho && n !== null && n >= 1 && n <= 3) info.append(el("span", "alert", n === 1 ? "¡mañana!" : "en " + n + " días"));
   if (retraso(it)) info.append(el("span", "alert late", "Retraso: " + plural(retraso(it), "día", "días")));
   const d = el("input"); d.type = "date"; d.value = it.fecha || ""; d.setAttribute("aria-label", "Cambiar día");
   d.onchange = () => Store.change(it, { fecha: d.value, aplazada: 0 });
-  info.append(d);
-  li.append(chk, t, deleteButton("del", it, "Borrar", "¿Seguro?"), info);
+  const fl = el("label", "fecha"); fl.title = "Cambiar día";
+  fl.append(el("span", null, it.fecha ? cap(new Intl.DateTimeFormat("es-ES", { weekday: "long" }).format(D(it.fecha))) + " " + D(it.fecha).toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric" }) : "Sin día"), d);
+  fl.onclick = e => { if (e.target !== d && d.showPicker) { e.preventDefault(); try { d.showPicker(); } catch (x) {} } };
+  info.append(fl);
+  const acts = el("div", "acts");
+  const ren = el("button", "ico", "✏️"); ren.type = "button"; ren.title = "Cambiar nombre"; ren.setAttribute("aria-label", "Cambiar nombre: " + it.titulo);
+  ren.onclick = () => {
+    const inp = el("input", "rename"); inp.value = it.titulo; inp.maxLength = 200; inp.setAttribute("aria-label", "Nuevo nombre");
+    let fin = false;
+    const ok = () => { if (fin) return; fin = true; const v = inp.value.trim(); if (v && v !== it.titulo) Store.change(it, { titulo: v }); else render(); };
+    inp.onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); ok(); } if (e.key === "Escape") { fin = true; render(); } };
+    inp.onblur = ok;
+    t.replaceWith(inp); inp.focus(); inp.select();
+  };
+  const dup = el("button", "ico", "⧉"); dup.type = "button"; dup.title = "Duplicar"; dup.setAttribute("aria-label", "Duplicar: " + it.titulo);
+  dup.onclick = async () => {
+    dup.disabled = true;
+    try { const o = await Store.add(it.titulo, it.fecha || "", it.categoria); if (it.resumen) await Store.change(o, { resumen: it.resumen }); $("#status").textContent = "Duplicada «" + it.titulo + "»."; }
+    catch (e) { dup.disabled = false; $("#status").textContent = "No se pudo duplicar: " + errMsg(e); }
+  };
+  acts.append(ren, dup, deleteButton("del", it, "Borrar", "¿Seguro?"));
+  li.append(chk, t, acts, info);
   if (manual) {
     const ids = manual.list.map(x => x.id);
     const move = dir => { const j = manual.i + dir; [ids[manual.i], ids[j]] = [ids[j], ids[manual.i]]; saveOrder(ids); };
