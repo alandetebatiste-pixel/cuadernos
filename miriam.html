@@ -685,8 +685,23 @@ function render() {
 
   let groups;
   if (dayFilter) {
+    /* Día concreto: por categorías, en el mismo orden que la vista de cada categoría; las hechas al final */
     const its = Store.items.filter(i => i.fecha === dayFilter || (dayFilter === t && !i.hecho && i.fecha && i.fecha < t));
-    groups = [[cap(F.long.format(D(dayFilter))), "", its]];
+    const pd = its.filter(i => !i.hecho), dn = its.filter(i => i.hecho).sort(byDate).reverse();
+    list.append(el("p", "hint", cap(F.long.format(D(dayFilter))) + (pd.length > 1 ? " · Arrastra el asa ⠿ o usa las flechas para ordenarlas." : "")));
+    const cats = CFG.cats.concat([...new Set(pd.map(i => i.categoria).filter(c => CFG.cats.indexOf(c) < 0))]);
+    for (const c of cats) {
+      const sub = pd.filter(i => i.categoria === c).sort(byOrder);
+      if (!sub.length) continue;
+      const s = el("section", "cat"), h = el("h2", null, c); h.append(el("small", null, sub.length));
+      h.style.setProperty("--c", catColor(c));
+      const save = ids => saveSubOrder(c, ids);
+      const ul = el("ul", "sortable");
+      sub.forEach((it, i) => ul.append(row(it, sub.length > 1 ? { list: sub, i, save } : null)));
+      s.append(h, ul); list.append(s);
+      if (window.Sortable && sub.length > 1) Sortable.create(ul, { handle: ".grip", animation: 160, ghostClass: "ghost", onEnd: () => save([...ul.children].map(li => li.dataset.id)) });
+    }
+    groups = [["Hechas", "done", dn]];
   } else {
     /* Todas: una sección por categoría, cada una en el orden que haya puesto Miriam */
     groups = CFG.cats.map(c => [c, "cat", pend.filter(i => i.categoria === c).sort(byOrder), c]);
@@ -709,12 +724,18 @@ function render() {
     if (its.length > max) { const m = el("button", "more", "Ver las " + its.length + " hechas"); m.type = "button"; m.onclick = () => { ul.innerHTML = ""; its.forEach(it => ul.append(row(it))); m.remove(); }; s.append(m); }
     list.append(s);
   }
-  if (!list.children.length) { const e = el("div", "empty"); e.innerHTML = shiba("culo"); e.append(el("span", null, "Nada para este día. ¡Me voy a dar una vuelta!")); list.append(e); }
+  if (!list.querySelector("li")) { const e = el("div", "empty"); e.innerHTML = shiba("culo"); e.append(el("span", null, "Nada para este día. ¡Me voy a dar una vuelta!")); list.append(e); }
   else { const f = el("div", "footer"); f.innerHTML = shiba("culo"); f.append(el("span", null, "¡Eso es todo por aquí!")); list.append(f); }
 }
 
 const byOrder = (a, b) => ((a.orden == null ? 1e9 : a.orden) - (b.orden == null ? 1e9 : b.orden)) || byDate(a, b);
 
+/* Reordena solo unas tareas de una categoría (las de un día) sin tocar la posición de las demás */
+function saveSubOrder(c, subIds) {
+  const full = Store.pending().filter(i => i.categoria === c).sort(byOrder).map(i => i.id);
+  const set = new Set(subIds), q = subIds.slice();
+  saveOrder(full.map(id => set.has(id) ? q.shift() : id));
+}
 function saveOrder(ids) {
   ids.forEach((id, i) => { const it = Store.items.find(x => x.id === id); if (it) it.orden = i; });
   render();
@@ -761,7 +782,7 @@ function row(it, manual) {
   li.append(chk, t, acts, info);
   if (manual) {
     const ids = manual.list.map(x => x.id);
-    const move = dir => { const j = manual.i + dir; [ids[manual.i], ids[j]] = [ids[j], ids[manual.i]]; saveOrder(ids); };
+    const move = dir => { const j = manual.i + dir; [ids[manual.i], ids[j]] = [ids[j], ids[manual.i]]; (manual.save || saveOrder)(ids); };
     const tools = el("div", "order");
     const up = el("button", "arrow", "↑"); up.type = "button"; up.setAttribute("aria-label", "Subir " + it.titulo); up.disabled = manual.i === 0; up.onclick = () => move(-1);
     const dn = el("button", "arrow", "↓"); dn.type = "button"; dn.setAttribute("aria-label", "Bajar " + it.titulo); dn.disabled = manual.i === manual.list.length - 1; dn.onclick = () => move(1);
