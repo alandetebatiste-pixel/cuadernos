@@ -290,7 +290,9 @@ const Store = {
     this.items.push(o); this.onchange(); return o;
   },
   async change(it, campos) {
-    Object.assign(it, campos); this.onchange();
+    Object.assign(it, campos);
+    if ("hecho" in campos) it.completada = campos.hecho ? today() : "";
+    this.onchange();
     try { await api("actualizar", it.id, campos); }
     catch (e) { this.onerror("No se guardó el cambio. Recarga la página."); this.load(); }
   },
@@ -613,7 +615,7 @@ function render() {
   if (!Store.loaded) { $("#scene").innerHTML = scene("hola"); return; }
   const t = today(), pend = Store.pending();
   const hoy = Store.items.filter(i => i.fecha && i.fecha <= t && !i.hecho);
-  const hechasHoy = Store.items.filter(i => i.hecho && i.fecha === t).length;
+  const hechasHoy = Store.items.filter(i => i.hecho && doneDay(i) === t).length;
   const pronto = pend.filter(i => i.fecha && daysTo(i.fecha) >= 1 && daysTo(i.fecha) <= 3).length;
   const mood = "hola";
   if (!$("#scene").firstChild) $("#scene").innerHTML = scene(mood);
@@ -641,7 +643,7 @@ function render() {
   for (let k = 0; k < 7; k++) {
     const i = w0 + k;
     const d = addDays(t, i), n = pend.filter(x => x.fecha === d || (i === 0 && x.fecha && x.fecha < t)).length;
-    const nh = Store.items.filter(x => x.hecho && x.fecha === d).length;
+    const nh = Store.items.filter(x => x.hecho && doneDay(x) === d).length;
     const b = el("button", "day" + (i === 0 ? " today" : "")); b.type = "button";
     b.setAttribute("aria-pressed", dayFilter === d);
     b.setAttribute("aria-label", cap(F.long.format(D(d))) + ", " + plural(n, "tarea", "tareas") + (nh ? ", " + plural(nh, "hecha", "hechas") : ""));
@@ -688,8 +690,8 @@ function render() {
   let groups;
   if (dayFilter) {
     /* Día concreto: por categorías, en el mismo orden que la vista de cada categoría; las hechas al final */
-    const its = Store.items.filter(i => i.fecha === dayFilter || (dayFilter === t && !i.hecho && i.fecha && i.fecha < t));
-    const pd = its.filter(i => !i.hecho), dn = its.filter(i => i.hecho).sort(byDate).reverse();
+    const pd = pend.filter(i => i.fecha === dayFilter || (dayFilter === t && i.fecha && i.fecha < t));
+    const dn = Store.items.filter(i => i.hecho && doneDay(i) === dayFilter).sort(byDate).reverse();
     list.append(el("p", "hint", cap(F.long.format(D(dayFilter))) + (pd.length > 1 ? " · Arrastra el asa ⠿ o usa las flechas para ordenarlas." : "")));
     const cats = CFG.cats.concat([...new Set(pd.map(i => i.categoria).filter(c => CFG.cats.indexOf(c) < 0))]);
     for (const c of cats) {
@@ -730,6 +732,8 @@ function render() {
   else { const f = el("div", "footer"); f.innerHTML = shiba("culo"); f.append(el("span", null, "¡Eso es todo por aquí!")); list.append(f); }
 }
 
+/* Día en que se completó (las antiguas, sin ese dato, cuentan en su fecha límite) */
+const doneDay = it => it.completada || it.fecha;
 const byOrder = (a, b) => ((a.orden == null ? 1e9 : a.orden) - (b.orden == null ? 1e9 : b.orden)) || byDate(a, b);
 
 /* Reordena solo unas tareas de una categoría (las de un día) sin tocar la posición de las demás */

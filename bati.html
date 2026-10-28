@@ -318,7 +318,9 @@ const Store = {
     this.items.push(o); this.onchange(); return o;
   },
   async change(it, campos) {
-    Object.assign(it, campos); this.onchange();
+    Object.assign(it, campos);
+    if ("hecho" in campos) it.completada = campos.hecho ? today() : "";
+    this.onchange();
     try { await api("actualizar", it.id, campos); }
     catch (e) { this.onerror("No se guardó el cambio. Recarga la página."); this.load(); }
   },
